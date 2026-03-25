@@ -1,0 +1,44 @@
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+}
+
+.container {
+  width: 320px;
+  margin: auto;
+  margin-top: 50px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+}
+
+label {
+  margin-top: 10px;
+  display: block;
+}
+
+select, button {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+button {
+  background: green;
+  color: white;
+  border: none;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+#resultBox {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  white-space: pre-line;
+}
