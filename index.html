@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seed Decision Dashboard</title>
+  
+  <script>
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #00ff88;
+      --primary-hover: #00cc6a;
+      --bg-dark: #0a0a0f;
+      --glass-bg: rgba(15, 20, 25, 0.4);
+      --glass-border: rgba(0, 255, 136, 0.2);
+      
+      --danger: #ff4757;
+      --warning: #ffa502;
+      --success: #2ed573;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      background: var(--bg-dark);
+      background-image: radial-gradient(circle at 10% 20%, rgba(0, 255, 136, 0.05), transparent 20%),
+                        radial-gradient(circle at 90% 80%, rgba(0, 200, 255, 0.05), transparent 20%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Fixed Top Navbar */
+    .navbar {
+      width: 100%;
+      height: 70px;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      z-index: 100;
+    }
+
+    .nav-brand {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-user span {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .nav-user button {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 6px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .nav-user button:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* Main Grid */
+    .dashboard {
+      flex: 1;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media(max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 0 15px rgba(0,255,136,0.02);
+      animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 15px;
+    }
+
+    /* Form Styles */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media(max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #aaa;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary);
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-size: 15px;
+    }
+
+    input[type="text"]::placeholder {
+      color: #888;
+    }
+
+    select {
+      appearance: inset;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0,255,136,0.1);
+      background: rgba(0,0,0,0.5);
+    }
+
+    select option {
+      background: #111;
+      color: white;
+      padding: 10px;
+    }
+
+    /* Big Submit Button */
+    .btn-analyze {
+      width: 100%;
+      padding: 18px;
+      margin-top: 30px;
+      background: linear-gradient(135deg, var(--primary), #00b35f);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0,255,136,0.3);
+    }
+
+    .btn-analyze:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0,255,136,0.5);
+    }
+
+    .btn-analyze:active {
+      transform: translateY(1px);
+    }
+
+    /* Result Panel Styles */
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 350px;
+      text-align: center;
+    }
+
+    #initialState {
+      color: #555;
+      font-size: 16px;
+    }
+
+    #initialState i {
+      font-size: 60px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    /* Circular Progress Bar */
+    .circular-progress {
+      position: relative;
+      height: 180px;
+      width: 180px;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) 0deg, rgba(255,255,255,0.1) 0deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(0,255,136,0.2), inset 0 0 20px rgba(0,0,0,0.5);
+      margin-bottom: 25px;
+      transition: background 1s ease-in-out;
+    }
+
+    .circular-progress::before {
+      content: "";
+      position: absolute;
+      height: 160px;
+      width: 160px;
+      border-radius: 50%;
+      background-color: var(--bg-dark);
+    }
+
+    .progress-value {
+      position: relative;
+      font-size: 50px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .progress-max {
+      font-size: 20px;
+      color: #888;
+    }
+
+    .recommendation-badge {
+      padding: 10px 25px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+    }
+
+    .details-box {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+      text-align: left;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .detail-item:last-child {
+      margin-bottom: 0px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <i class="fa-solid fa-leaf"></i> ApomiSeed
+  </div>
+  <div class="nav-user">
+    <span id="userAadhaar">User: **** **** 1234</span>
+    <button onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
+  </div>
+</nav>
+
+<div class="dashboard">
+  
+  <!-- Left Column: Inputs -->
+  <div class="panel">
+    <h3><i class="fa-solid fa-sliders"></i> Context Parameters</h3>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Crop Name</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-wheat-awn"></i>
+          <input type="text" id="cropName" placeholder="e.g. Rice, Wheat" autocomplete="off">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Access Mode</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <select id="mode">
+            <option>Farmer Direct</option>
+            <option>Call Support</option>
+            <option>Kiosk</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Seed Type</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-seedling"></i>
+          <select id="seed">
+            <option>Local / Apomictic</option>
+            <option>Standard Hybrid</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Soil Type</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-mound"></i>
+          <select id="soil">
+            <option>Black Soil (Fertile)</option>
+            <option>Red Soil</option>
+            <option>Sandy Soil</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Average Temp.</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-temperature-half"></i>
+          <select id="temp">
+            <option>Optimal (Medium)</option>
+            <option>Low</option>
+            <option>High</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Water Availability</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-droplet"></i>
+          <select id="water">
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Farmer EXP.</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-hat-cowboy"></i>
+          <select id="experience">
+            <option>Experienced (>5yrs)</option>
+            <option>New / Novice</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <button class="btn-analyze" onclick="analyzeConditions()" id="analyzeBtn">
+      <i class="fa-solid fa-microchip" style="margin-right: 8px;"></i> Run Analysis Model
+    </button>
+  </div>
+
+  <!-- Right Column: Result -->
+  <div class="panel">
+    <h3><i class="fa-solid fa-chart-column"></i> Recommendation Result</h3>
+    
+    <div class="result-content">
+      
+      <!-- Initial State -->
+      <div id="initialState">
+        <i class="fa-solid fa-cubes-stacked"></i>
+        <p>Awaiting parameters to run the predictive apomixis model.</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="hidden">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 50px; color: var(--primary); margin-bottom:20px;"></i>
+        <p style="color: #aaa; letter-spacing: 1px;">COMPUTING THRESHOLDS...</p>
+      </div>
+
+      <!-- Final Result Display -->
+      <div id="finalState" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        
+        <div class="circular-progress" id="progressRing">
+          <span class="progress-value"><span id="scoreText">0</span><span class="progress-max">/10</span></span>
+        </div>
+        
+        <div class="recommendation-badge" id="recBadge">REUSABLE</div>
+        
+        <div class="details-box">
+          <div class="detail-item">
+            <span style="color:#aaa;">Crop Targeted:</span> 
+            <span id="detailCrop" style="text-transform: capitalize; font-weight: 600;">Unspecified</span>
+          </div>
+          <div class="detail-item">
+            <span style="color:#aaa;">Model Constraint:</span> 
+            <span id="detailReason">Based on environmental factors</span>
+          </div>
+          <div class="detail-item">
+            <span style="color:#aaa;">Access Path:</span> 
+            <span id="detailMode">Farmer Direct</span>
+          </div>
+          <div class="detail-item">
+            <span style="color:#aaa;"><i class="fa-solid fa-coins"></i> Approx. Cost Saved:</span> 
+            <span id="detailSavings" style="font-weight: 800;">₹1000 - ₹2000</span>
+          </div>
+        </div>
+        
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Mask Aadhaar on load
+  const aadhaar = sessionStorage.getItem('aadhaar') || 'UNKNOWN';
+  if(aadhaar.length === 12) {
+    document.getElementById('userAadhaar').innerText = `User: **** **** ${aadhaar.slice(-4)}`;
+  } else {
+    document.getElementById('userAadhaar').innerText = `User: ${aadhaar}`;
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+  }
+
+  function analyzeConditions() {
+    const btn = document.getElementById('analyzeBtn');
+    const initBox = document.getElementById('initialState');
+    const loadBox = document.getElementById('loadingState');
+    const finalBox = document.getElementById('finalState');
+    
+    // UI Reset for Loading
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing...';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+    
+    initBox.classList.add('hidden');
+    finalBox.classList.add('hidden');
+    finalBox.classList.remove('flex');
+    loadBox.classList.remove('hidden');
+
+    setTimeout(() => {
+      // Inputs
+      let cropName = document.getElementById("cropName").value || "Unspecified";
+      let mode = document.getElementById("mode").value;
+      let seed = document.getElementById("seed").value;
+      let soil = document.getElementById("soil").value;
+      let temp = document.getElementById("temp").value;
+      let water = document.getElementById("water").value;
+      let experience = document.getElementById("experience").value;
+
+      // Algorithm
+      let score = 0;
+      if (seed.includes("Local")) score += 3;  
+      if (soil.includes("Black Soil")) score += 2;
+      if (temp.includes("Optimal")) score += 2;
+      if (water.includes("Medium") || water.includes("High")) score += 2;
+      if (experience.includes("Experienced")) score += 1;
+
+      if (seed.includes("Hybrid")) score = 0; // Hybrid fails condition completely
+
+      // Display logic
+      let resultText = "";
+      let color = "";
+      let glowColor = "";
+      
+      if (score >= 7) {
+        resultText = "✅ Highly Reusable";
+        color = "var(--success)";
+        glowColor = "rgba(46, 213, 115, 0.5)";
+      }
+      else if (score >= 4) {
+        resultText = "⚠️ Use with Caution";
+        color = "var(--warning)";
+        glowColor = "rgba(255, 165, 2, 0.5)";
+      }
+      else {
+        resultText = "❌ Do Not Reuse";
+        color = "var(--danger)";
+        glowColor = "rgba(255, 71, 87, 0.5)";
+      }
+      
+      let reason = "Optimal environmental bounds";
+      if(seed.includes("Hybrid")) reason = "Standard hybrid generation lock";
+      else if(score < 4) reason = "Harsh conditions reduce viability";
+
+      // Animate Progress Ring
+      // Instead of changing instantly, we animate the ring
+      let progressRing = document.getElementById("progressRing");
+      let scoreText = document.getElementById("scoreText");
+      
+      let endAngle = (score / 10) * 360;
+      let currentAngle = 0;
+      
+      loadBox.classList.add('hidden');
+      finalBox.classList.remove('hidden');
+      
+      document.getElementById("recBadge").innerText = resultText;
+      document.getElementById("recBadge").style.background = color + "22"; // 22 is hex opacity
+      document.getElementById("recBadge").style.color = color;
+      document.getElementById("recBadge").style.border = `1px solid ${color}`;
+      
+      document.getElementById("detailReason").innerText = reason;
+      document.getElementById("detailMode").innerText = mode;
+      document.getElementById("detailCrop").innerText = cropName;
+      
+      if(score >= 4) {
+        document.getElementById("detailSavings").innerText = "₹1200 - ₹2500 per acre";
+      } else {
+        document.getElementById("detailSavings").innerText = "₹0 (Loss of yield imminent)";
+        document.getElementById("detailSavings").style.color = "var(--danger)";
+      }
+
+      // Smooth counter & ring animation
+      let speed = 20;
+      let interval = setInterval(() => {
+        currentAngle += 5;
+        let pScore = Math.floor((currentAngle / 360) * 10);
+        if(pScore > score) pScore = score;
+        
+        scoreText.innerText = pScore;
+        progressRing.style.background = `conic-gradient(${color} ${currentAngle}deg, rgba(255,255,255,0.05) ${currentAngle}deg)`;
+        progressRing.style.boxShadow = `0 0 30px ${glowColor}, inset 0 0 20px rgba(0,0,0,0.5)`;
+        scoreText.style.color = color;
+
+        if (currentAngle >= endAngle) {
+          clearInterval(interval);
+          scoreText.innerText = score;
+        }
+      }, speed);
+
+      // Restore Button Post-Loading
+      btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:8px;"></i> Analysis Complete';
+      btn.style.opacity = '1';
+      btn.style.background = `linear-gradient(135deg, ${color}, #222)`;
+      btn.style.color = 'white';
+      
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fa-solid fa-microchip" style="margin-right: 8px;"></i> Run Analysis Model';
+        btn.style.background = 'linear-gradient(135deg, var(--primary), #00b35f)';
+        btn.style.color = '#000';
+        btn.disabled = false;
+      }, 3000);
+
+      // Save Data to backend
+      const payload = {
+        aadhaar: aadhaar,
+        cropName, mode, seed, soil, temp, water, experience, score,
+        recommendation: resultText
+      };
+      
+      fetch('http://localhost:3000/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.error('Failed to sync telemetry.', err));
+
+    }, 1500); // 1.5s simulated compute time
+  }
+</script>
+
+</body>
+</html>
